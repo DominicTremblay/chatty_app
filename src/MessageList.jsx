@@ -1,5 +1,6 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import Message from './Message.jsx';
+import MessageSystem from './MessageSystem.jsx';
 
 class MessageList extends Component {
   render() {
@@ -8,11 +9,9 @@ class MessageList extends Component {
     const messageList = messages.map( message => {
 
                                                   if (message.type === "incomingMessage") { 
-                                                    return <Message key={ message.id } message = { message } /> 
+                                                    return <Message key={ message.id } message={ message } /> 
                                                   } else {
-                                                    return( <div key={ message.id } className="message system">
-                                                             { message.content }
-                                                            </div> );
+                                                    return <MessageSystem key={ message.id } content={ message.content } />
                                                   }
                                                 });
 

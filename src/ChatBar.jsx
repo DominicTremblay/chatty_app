@@ -3,7 +3,7 @@ import React, {Component} from 'react';
 class ChatBar extends Component {
 
   render() {
-    const { currentUser = "Anonymous", updateUser, postMessage } = this.props;
+    const { currentUser, updateUser, postMessage } = this.props;
     return (
       <footer className="chatbar">
         <input className="chatbar-username" placeholder="Your Name (Optional)" defaultValue={ currentUser } onKeyUp={ updateUser } />

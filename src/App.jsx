@@ -12,18 +12,21 @@ class App extends Component {
     
     this.state = {
       
-      currentUser: { name: "Anonymous"},
+      currentUser: { name: 'Anonymous' },
       
-      messages: []
+      messages: [],
+      userColor: '#000000',
+      userCount: 0
     };
   }
 
-  createNewMsg = ( content, type, username = this.state.currentUser.name ) => {
+  createNewMsg = ( content, type, username = this.state.currentUser.name, color = this.state.userColor ) => {
     
     const newMessage = {
       username,
       content,
-      type
+      type,
+      color
     };
 
     return newMessage;
@@ -61,6 +64,14 @@ class App extends Component {
     this.setState({ messages });
   }
 
+  updateUserCount = message => {
+    this.setState({ userCount: message.userCount });
+  }
+
+  updateUserColor = message => {
+    this.setState({ userColor: message.color })
+  }
+
   componentDidMount() {
     const url = 'ws://localhost:3001';
     this.socket = new WebSocket(url);
@@ -69,9 +80,16 @@ class App extends Component {
     }
 
     this.socket.onmessage = ( event ) => {
+      const types = {
+        incomingMessage: this.updateMessages,
+        incomingNotification: this.updateMessages,
+        userCountNotification: this.updateUserCount,
+        userColor: this.updateUserColor
+      };
 
       const incomingMsg = JSON.parse( event.data );
-      this.updateMessages(incomingMsg);
+      const updateFn = types[incomingMsg.type]; 
+      updateFn(incomingMsg); 
 
     }
 
@@ -89,10 +107,13 @@ class App extends Component {
       <div>
         <nav className="navbar">
           <a href="/" className="navbar-brand">Chatty</a>
+
+          <span className="user-count">{ this.state.userCount } users online</span>
+
         </nav>
 
-        <MessageList messages = { this.state.messages } />
-        <ChatBar currentUser = { this.state.currentUser.name } postMessage = { this.postMessage } updateUser = { this.updateUser } />
+        <MessageList messages={ this.state.messages } />
+        <ChatBar currentUser={ this.state.currentUser.name } userCount={ this.state.userCount } postMessage={ this.postMessage } updateUser={ this.updateUser } />
       </div>
     );
   }

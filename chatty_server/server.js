@@ -11,7 +11,14 @@ const server = express()
 
 const wss = new SocketServer.Server({ server });
 
-wss.broadcast = function broadcast(data) {
+const assignColor = () => {
+  const hexcodeMap = [0,1,2,3,4,5,6,7,8,9,'A','B','C','D','E','F'];
+  let hexcode = [0,0,0,0,0,0];
+  hexcode = hexcode.map(e => hexcodeMap[Math.floor(Math.random() * hexcodeMap.length)] );
+  return `#${hexcode.join('')}`
+}
+
+wss.broadcast = data => {
   wss.clients.forEach(function each(client) {
     if (client.readyState === SocketServer.OPEN) {
       client.send(data);
@@ -19,8 +26,26 @@ wss.broadcast = function broadcast(data) {
   });
 };
 
+const sendUserCount = userCount => {
+  const message = {
+    type: "userCountNotification",
+    userCount: userCount
+  }
+  wss.broadcast(JSON.stringify( message ));
+} 
+
+const sendUserColor = (color, ws) => {
+  const message = {
+    type: "userColor",
+    color: color
+  }
+  ws.send(JSON.stringify( message ));
+}
+
 wss.on('connection', (ws) => {
   console.log('Client connected');
+  sendUserCount(wss.clients.size);
+  sendUserColor(assignColor(), ws);
 
   const types = {
     postMessage: "incomingMessage",
@@ -33,12 +58,13 @@ wss.on('connection', (ws) => {
     const message = JSON.parse( clientMsg );
     message.id = uuid();
     message.type = types[message.type];
-    console.log(message);
     wss.broadcast( JSON.stringify( message ));
 
 
   });
 
   // Set up a callback for when a client closes the socket. This usually means they closed their browser.
-  ws.on('close', () => console.log('Client disconnected'));
+  ws.on('close', () => { 
+    console.log('Client disconnected');
+    sendUserCount(wss.clients.size); });
 });
